@@ -64,6 +64,17 @@ h2::after {
 }
 #release .list-group-item:hover { transform: scale(1.02); box-shadow:0 8px 20px rgba(0,0,0,0.3); cursor:default; }
 
+#release .list-group-item p {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+#release .list-group-item:hover p {
+  max-height: 200px; /* ajusta según contenido */
+}
+
+
 /* ====== TEMAS ====== */
 /* OSCURO */
 body[data-theme="dark"] {
@@ -86,3 +97,40 @@ body[data-theme="light"] section{ border-color:#ccc; }
 body[data-theme="light"] .card{ background-color:#fff; color:#111; border:1px solid #ccc; }
 body[data-theme="light"] .list-group-item{ background-color:#fff; color:#111; }
 body[data-theme="light"] .list-group-item:hover{ background-color:#e0e0e0; }
+
+/* ICONOS DE REDES SOCIALES */
+a{
+  text-decoration: none;
+  padding: 3px;
+}
+
+/* información adicional solo al hover*/
+.list-group-item:hover::after {
+  content: attr(data-tooltip);
+  display: block;
+  background: #58a6ff;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
+/* Animación sutil en cards*/
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+#progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 5px;
+  background: #58a6ff;
+  width: 0%;
+  transition: width 0.2s ease;
+}

@@ -6,6 +6,48 @@
 
   <title>Alexander Pineda Martinez | IT Specialist | Cloud & Full Stack Developer</title>
 
+<!-- ===================== META GLOBAL ===================== -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="author" content="Alexander Pineda Martinez">
+<meta http-equiv="Content-Language" content="en,de,es">
+
+<!-- ===================== SEO: Español ===================== -->
+<meta name="description" lang="es" content="Alexander Pineda Martinez – Especialista en IT, Cloud y Full-Stack. Consultoría IT, soporte empresarial, implementación de Microsoft Intune, Azure y Google Workspace. Freelance o contratación para startups y empresas en Alemania.">
+<meta name="keywords" lang="es" content="Especialista en IT, Desarrollador Full Stack, Cloud Engineer, Seguridad IT, Microsoft Intune, Azure, Google Workspace, Active Directory, ServiceNow, Python, Freelance IT Alemania, Consultoría IT, Startups alemanas">
+<link rel="alternate" hreflang="es" href="https://tu-sitio.com/es/">
+
+<!-- ===================== SEO: Inglés ===================== -->
+<meta name="description" lang="en" content="Alexander Pineda Martinez – IT Specialist & Full-Stack Developer. IT consulting, enterprise support, Microsoft Intune, Azure, and Google Workspace expert. Available as freelance or full-time for startups and companies in Germany.">
+<meta name="keywords" lang="en" content="IT Specialist, Full Stack Developer, Cloud Engineer, IT Security, Microsoft Intune, Azure, Google Workspace, Active Directory, ServiceNow, Python, Freelance IT Germany, IT Consulting, German Startups">
+<link rel="alternate" hreflang="en" href="https://tu-sitio.com/en/">
+
+<!-- ===================== SEO: Alemán ===================== -->
+<meta name="description" lang="de" content="Alexander Pineda Martinez – IT-Spezialist und Full-Stack-Entwickler. IT-Beratung, Unternehmenssupport, Experte für Microsoft Intune, Azure und Google Workspace. Verfügbar als Freelancer oder Festangestellter für Startups und Unternehmen in Deutschland.">
+<meta name="keywords" lang="de" content="IT Spezialist, Full Stack Entwickler, Cloud Engineer, IT Sicherheit, Microsoft Intune, Azure, Google Workspace, Active Directory, ServiceNow, Python, Freelance IT Deutschland, IT Beratung, Deutsche Startups">
+<link rel="alternate" hreflang="de" href="https://tu-sitio.com/de/">
+
+<!-- ===================== OPEN GRAPH / FACEBOOK ===================== -->
+<meta property="og:title" content="Alexander Pineda Martinez | IT Specialist & Full Stack Developer">
+<meta property="og:description" content="Resilient, curious and people-first IT professional. Freelance or full-time IT specialist for startups and companies in Germany. Cloud, Security, and Full-Stack development expertise.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tu-sitio.com/">
+<meta property="og:image" content="https://tu-sitio.com/images/preview.png">
+
+<!-- ===================== TWITTER CARD ===================== -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Alexander Pineda Martinez | IT Specialist & Full Stack Developer">
+<meta name="twitter:description" content="IT Specialist | Cloud | Security | Full-Stack | Freelance & Startup Ready | Multilingual | Germany Focus">
+<meta name="twitter:image" content="https://tu-sitio.com/images/preview.png">
+
+<!-- ===================== BRANDING / COLORES ===================== -->
+<meta name="theme-color" content="#0d1117">
+<meta name="msapplication-TileColor" content="#0d1117">
+
+
+
+
   <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -13,26 +55,35 @@
   <!-- CSS -->
   <link rel="stylesheet" href="/static/style.css">
 </head>
-<body data-theme="dark">
+<body data-theme="dark" itemscope itemtype="https://schema.org/Person">
+
+
+   <!-- ====== BARRA DE PROGRESO ====== -->
+    <div id="progress"></div>
 
   <!-- ====== HERO ====== -->
   <header class="text-center py-5 fade-in">
-    <h1>Willkommen! Ich bin Alexander</h1>
-    <p class="lead">Ein IT-Spezialist mit Fokus auf Support, Sicherheit und Cloud.<br>
+    <h1 itemprop >Willkommen! Ich bin Alexander  Martinez</h1>
+    <p class="lead" itemprop="jobTitle">Ein IT-Spezialist mit Fokus auf Support, Sicherheit und Cloud.<br>
     Welcome to the MVP of me 🚀</p>
+     <p itemprop="description">
+    Mehrsprachiger IT-Fachmann, der Beratungs-, Unternehmenssupport- und Freiberufliche Dienstleistungen für Startups und Unternehmen in Deutschland anbietet..
+  </p>
   </header>
 
   <!-- ====== RELEASE NOTES ====== -->
   <section id="release" class="container fade-in">
     <h2 class="text-center mb-5">Release Notes</h2>
     <ul class="list-group list-group-flush">
-      <li class="list-group-item">
-        <b>v1.0 – Habana, Bachelor in Computer Science 🎓</b><br>
+      <p>
+        <li class="list-group-item">
+         <b>v1.0 – Habana, Bachelor in Computer Science 🎓</b><br>
         🇬🇧 EN: Built solid foundations in programming, algorithms and system architecture.  
         Learned structured thinking — a mindset aligned with German engineering culture. <br>
         🇩🇪 DE: Solide Grundlagen in Programmierung, Algorithmen und Systemarchitektur erworben.  
         Strukturiertes Denken gelernt – eine Denkweise, die gut zur deutschen Ingenieurskultur passt.
-      </li>
+       </li>
+      </p>
       <li class="list-group-item">
         <b>v2.0 – Customer Service & IT Support</b><br>
         🇬🇧 EN: First deployments “in the wild”: solving hardware, software and network issues.  
@@ -68,11 +119,14 @@
   <section id="projects" class="container fade-in">
     <h2 class="text-center mb-5">Deploys</h2>
     <div class="row g-4">
-      <div class="col-md-4">
+      <div class="col-md-4" itemscope itemtype="https://schema.org/CreativeWork">
         <div class="card p-3 h-100">
           <h5>Feature: Mobile Device Management Rollout</h5>
           <p><b>Stack:</b> Microsoft Intune, Azure AD</p>
           <p>Secured, productive devices with fewer incidents.</p>
+       <!--    <li class="list-group-item bg-transparent text-light" data-tooltip="Read more.">
+          v3.0 – Software Tester & Systems Admin
+          </li> -->
         </div>
       </div>
       <div class="col-md-4">
@@ -80,6 +134,9 @@
           <h5>Feature: CRM Workflow Optimization</h5>
           <p><b>Stack:</b> Salesforce, ServiceNow</p>
           <p>Faster processes and improved user experience.</p>
+<!--           <li class="list-group-item bg-transparent text-light" data-tooltip="Read more.">
+          v3.0 – Software Tester & Systems Admin
+          </li> -->
         </div>
       </div>
       <div class="col-md-4">
@@ -87,6 +144,9 @@
           <h5>Feature: Google Workspace Migration</h5>
           <p><b>Stack:</b> Google Workspace, VPNs, AD</p>
           <p>Seamless collaboration between distributed teams.</p>
+<!--           <li class="list-group-item bg-transparent text-light" data-tooltip="Read more.">
+          v3.0 – Software Tester & Systems Admin
+          </li> -->
         </div>
       </div>
     </div>
@@ -95,7 +155,7 @@
   <!-- ====== SKILLS ====== -->
   <section id="skills" class="container fade-in">
     <h2 class="text-center mb-5">Stack & Architekturen</h2>
-    <div class="row g-4 text-center">
+    <div class="row g-4 text-center" itemprop="skills">
       <div class="col-md-3"><div class="card p-3">Active Directory, Intune, SCCM, Citrix</div></div>
       <div class="col-md-3"><div class="card p-3">Azure, GCP, Office 365, Google Workspace</div></div>
       <div class="col-md-3"><div class="card p-3">ServiceNow, Zendesk, Automation Tools</div></div>
@@ -115,20 +175,26 @@
   </section>
 
   <!-- ====== CONTACT ====== -->
+   
   <footer class="text-center py-5 fade-in">
+    <div itemprop="contactPoint" itemscope itemtype="https://schema.org/ContactPoint">
+  <meta itemprop="email" content="cubalex1992@gmail.com">
+  <meta itemprop="url" content="https://www.linkedin.com/in/alexmartineztech/">
+  <meta itemprop="sameAs" content="https://github.com/alexmartineztech">
+</div>
     <h2>Let’s build something 🇩🇪🚀</h2>
     <p>
       <a href="https://www.linkedin.com/in/alexmartineztech/" target="_blank">
-        <i class="bi bi-linkedin enlaces">LinkedIn</i>
+        <i class="bi bi-linkedin enlaces"></i>
       </a>
       <a href="https://github.com/alexmartineztech" target="_blank">
-        <i class="bi bi-github enlaces">GitHub</i>
+        <i class="bi bi-github enlaces"></i>
       </a>
-      <a href="mailto:cubalex1992@gmail.com">
-        <i class="bi bi-envelope-fill enlaces">Email</i>
+      <a href="mailto:cubalex1992@gmail.com" >
+        <i class="bi bi-envelope-fill enlaces"></i>
       </a>
     </p>
-    <p class="mt-4 text-muted">
+    <p class="mt-4 text-muted ">
       <script>
         document.write('&copy; ' + new Date().getFullYear() + ' Alexander Pineda Martinez. All rights reserved.');
       </script>
