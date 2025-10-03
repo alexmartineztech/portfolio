@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Progress | Alexander Pineda Martinez</title>
+<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+<header>
+  <h1>💻 Learning Progress</h1>
+  <h2>What I am learning with Python & Web development</h2>
+</header>
+
+<div class="container py-4">
+  <ul>
+    {% for topic in topics %}
+    <li>{{ topic }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<footer>©1992-2025 Alexander Pineda Martinez</footer>
+</body>
+</html>
