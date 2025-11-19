@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OS Diagram — v1.0 (Interactive)</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    :root{
+      --bg:#f5f7fa;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#4b8cff;
+      --border:#e3e6ec;
+      --line:#b9c0d4;
+      --glass: rgba(255,255,255,0.6);
+      --success: #22c55e;
+      --danger:#ef4444;
+      --shadow: 0 6px 20px rgba(0,0,0,0.05);
+    }
+    [data-theme="dark"]{
+      --bg:#0b1220;
+      --card:#0f1724;
+      --muted:#9aa4b2;
+      --accent:#5aa6ff;
+      --border: #162029;
+      --line:#243241;
+      --glass: rgba(255,255,255,0.03);
+      --shadow: 0 8px 30px rgba(0,0,0,0.6);
+    }
+
+    /* ---------- BASE SECTION ---------- */
+    body{font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--muted); padding:24px;}
+    .os-section {
+      background: linear-gradient(180deg,var(--bg), var(--glass));
+      padding: 20px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:visible;
+    }
+    .os-header{display:flex;gap:12px;align-items:center;}
+    .os-title{font-size:18px;color:var(--muted);margin:0;font-weight:700}
+    .os-desc{margin:6px 0 0 0;color:var(--muted);line-height:1.4}
+
+/*     .controls{display:flex;gap:8px;position:absolute;right:18px;top:18px}
+ */   
+ .controls {
+  display: flex;
+  flex-wrap: wrap; /* allows wrapping on small screens */
+  gap: 8px; /* space between buttons */
+  justify-content: center; /* center the buttons */
+  padding: 10px;
+}
+.btn.small {
+  flex: 1 1 auto; /* allow buttons to shrink and grow */
+  min-width: 80px; /* minimum width for touch targets */
+  padding: 8px 12px;
+  font-size: 14px;
+  white-space: nowrap; /* prevent text wrapping */
+}
+/*   .btn{background:var(--card);border:1px solid var(--border);padding:8px 10px;border-radius:8px;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.04)}
+ */    .btn:active{transform:translateY(1px)}
+    .btn.small{padding:6px 8px;font-size:13px}
+
+    /* collapse caret */
+    .caret{display:inline-block;transition:transform .35s ease;}
+    .os-section[data-open="true"] .caret{transform:rotate(180deg)}
+
+    /* diagram container */
+    .os-diagram-container { max-height: 0; overflow: hidden; transition: max-height 0.8s ease; }
+
+    .diagram-wrap{position:relative;padding:18px 10px}
+
+    /* svg behind nodes for dynamic lines */
+    svg.conn{position:absolute;inset:0;pointer-events:none;z-index:0}
+
+    /* grid */
+    .os-diagram {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 12px;
+      position:relative;
+      padding-bottom: 30px;
+      z-index:1;
+      transform-origin:center center;
+      transition:transform .25s ease;
+    }
+
+    /* node */
+    .os-node {
+      background: var(--card);
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      font-weight: 700;
+      text-align: center;
+      transition: 0.28s;
+      position: relative;
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      animation: nodeIntro 0.8s forwards ease;
+      cursor:pointer;
+      min-height:64px;
+      display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column
+    }
+
+    .os-node .label{font-size:14px;color:var(--muted)}
+    .os-node .meta{font-size:12px;color:var(--muted);opacity:.8}
+
+    /* color groups */
+    .group-hw{border-left:6px solid #60a5fa}
+    .group-mem{border-left:6px solid #86efac}
+    .group-kernel{border-left:6px solid #facc15}
+    .group-net{border-left:6px solid #7dd3fc}
+    .group-db{border-left:6px solid #fda4af}
+
+    .os-node:hover{transform:scale(1.04);box-shadow:0 12px 30px rgba(0,0,0,0.12);}
+
+    .os-node::after{content:"";position:absolute;inset:-6px;border-radius:14px;background:radial-gradient(circle, rgba(120,160,255,0.08), transparent);opacity:0;transition:.4s}
+    .os-node:hover::after{opacity:1}
+
+    .os-center { grid-column: span 3; background: #dbe9ff; padding: 15px; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.08); opacity: 0; transform: translateY(20px) scale(0.9); animation: nodeIntro 0.8s forwards ease; text-align:center }
+
+    @keyframes nodeIntro{0%{opacity:0;transform:translateY(20px) scale(.9)}100%{opacity:1;transform:translateY(0) scale(1)}}
+
+    /* lines fade */
+    .connection-line{position:absolute;width:2px;background:var(--line);z-index:-1;opacity:0;animation:lineFade 1.2s forwards ease}
+    @keyframes lineFade{0%{opacity:0;height:0}100%{opacity:1}}
+
+    /* responsive */
+    @media(max-width:900px){
+      .os-diagram{grid-template-columns:repeat(1,1fr)}
+      .os-center{grid-column:span 1}
+      .controls{position:static;margin-top:12px}
+    }
+    /* iPad and up (768px and wider) */
+@media (min-width: 768px) {
+  .btn.small {
+    min-width: 100px;
+    font-size: 16px;
+  }
+}
+
+/* Mobile phones (max 767px) */
+@media (max-width: 767px) {
+  .controls {
+    justify-content: space-around; /* spread buttons nicely */
+  }
+  .btn.small {
+    flex: 1 1 45%; /* two buttons per row */
+    font-size: 14px;
+  }
+}
+
+
+    /* filters */
+    .filters{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .filter-chip{padding:6px 8px;border-radius:999px;border:1px solid var(--border);background:var(--card);font-weight:700;cursor:pointer}
+    .filter-chip.active{background:linear-gradient(90deg,var(--accent), #6ee7b7);color:#03204c}
+
+    /* tooltip */
+    .tooltip{position:absolute;background:var(--card);border:1px solid var(--border);padding:8px;border-radius:8px;box-shadow:var(--shadow);font-size:13px;color:var(--muted);z-index:50;pointer-events:none;opacity:0;transform:translateY(-6px) scale(.98);transition:transform .12s,opacity .12s}
+    .tooltip.show{opacity:1;transform:translateY(0) scale(1)}
+
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .18s}
+    .modal-backdrop.open{opacity:1;pointer-events:auto}
+    .modal{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);width:min(720px,92%);box-shadow:0 20px 60px rgba(0,0,0,0.4);color:var(--muted)}
+    .modal h3{margin:0 0 8px 0}
+    .close-x{position:absolute;right:12px;top:8px;padding:4px 8px;border-radius:8px}
+
+    /* mini-scheduler */
+    .scheduler{display:flex;gap:8px;align-items:center;margin-top:12px}
+    .proc{padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card);min-width:100px}
+    .progress{height:8px;background:linear-gradient(90deg,#e2e8f0,#f8fafc);border-radius:6px;overflow:hidden}
+    .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent), #60c6a2)}
+
+    /* zoom slider */
+    .zoom-control{display:flex;align-items:center;gap:8px;padding:6px}
+
+    /* small utility text */
+    .muted{color:var(--muted);font-size:13px}
+    /* --------- FOUNDATION DESCRIPTION SECTION ---------- */
+.foundation-description {
+  margin-top: 25px;
+  background: #f5f7fa;
+  padding: 22px;
+  border-radius: 14px;
+  border: 1px solid #e3e6ec;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  animation: fadeIn 0.8s ease;
+}
+
+.foundation-description h3 {
+  margin-top: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #2b3954;
+}
+
+.foundation-description p {
+  line-height: 1.55;
+  color: #3b465a;
+  margin-top: 14px;
+  font-size: 1rem;
+}
+
+.foundation-description ul {
+  margin-top: 14px;
+  padding-left: 20px;
+  color: #3b465a;
+}
+
+.foundation-description li {
+  margin-bottom: 8px;
+}
+
+/* subtle fade animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* --------- FUNCTIONALITIES SECTION ---------- */
+.diagram-features {
+  margin-top: 25px;
+  background: #ffffff;
+  padding: 22px;
+  border-radius: 14px;
+  border: 1px solid #e3e6ec;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  animation: fadeIn 0.8s ease;
+}
+
+.diagram-features h3 {
+  margin-top: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #25314a;
+}
+
+.diagram-features p,
+.diagram-features li {
+  color: #3b465a;
+  line-height: 1.55;
+  font-size: 1rem;
+}
+
+.diagram-features ul {
+  margin-top: 14px;
+  padding-left: 20px;
+}
+
+.diagram-features li {
+  margin-bottom: 10px;
+}
+  </style>
+</head>
+<body>
+  
+<div class="os-section" id="osSection" role="region" aria-label="OS Diagram">
+  <div class="os-header">
+    
+    <div>
+      <h2 class="os-title">v1.0  OS Thinking & Architecture (Interactive)</h2>
+      <p class="os-desc">Expanded, interactive diagram showing subsystems, scheduler simulation, filters, dark-mode, zoom, tooltips and detailed node modals  demonstrates technical thinking and articulation.</p>
+    </div>
+
+  
+
+    <div class="controls" aria-hidden="false">
+      <button class="btn small filter-chip active" id="darkToggle" title="Toggle dark mode">🌙</button>
+      <button class="btn small filter-chip active" id="zoomOut" title="Zoom out">➖</button>
+      <button class="btn small filter-chip active" id="zoomIn" title="Zoom in">➕</button>
+      <button class="btn small filter-chip active" id="simulateBtn" title="Run scheduling simulation">▶ Scheduler</button>
+      <button class="btn small filter-chip active" id="expandAll" title="Expand all nodes">⤢ Expand</button>
+      <button class="btn small filter-chip active" id="collapseAll" title="Collapse all nodes">⤡ Collapse</button>
+    </div>
+  </div>
+
+  <div class="filters" id="filters" aria-hidden="false">
+    <button class="filter-chip active " data-group="all">All</button>
+    <button class="filter-chip active" data-group="group-hw">Hardware</button>
+    <button class="filter-chip active" data-group="group-mem">Memory</button>
+    <button class="filter-chip active" data-group="group-kernel">Kernel</button>
+    <button class="filter-chip active" data-group="group-net">Network</button>
+    <button class="filter-chip active" data-group="group-db">Database</button>
+  </div>
+
+  <div id="os-diagram-container" class="os-diagram-container">
+    <div class="diagram-wrap">
+
+      <!-- dynamic SVG for connections -->
+      <svg class="conn" id="connSvg" aria-hidden="true"></svg>
+
+      <div class="os-diagram" id="diagram">
+
+        <!-- NODES (data-* attributes power tooltips, detail modal and filtering) -->
+        <div class="os-node group-hw" data-id="cpu" data-title="CPU — Core compute" data-desc="Executes instructions, schedules threads, performs arithmetic & control operations." tabindex="0">
+          <div style="font-size:22px">🖥️</div>
+          <div class="label">CPU</div>
+          <div class="meta">Cores: 4 · Threads: 8</div>
+        </div>
+
+        <div class="os-node group-mem" data-id="ram" data-title="RAM — Volatile memory" data-desc="Holds active data and program state for fast access by the CPU." tabindex="0">
+          <div style="font-size:22px">🧠</div>
+          <div class="label">RAM</div>
+          <div class="meta">16 GB · DDR4</div>
+        </div>
+
+        <div class="os-node group-kernel" data-id="scheduler" data-title="Scheduler" data-desc="Manages CPU time; multiple algorithms (RR, FIFO, priority) can be simulated." tabindex="0">
+          <div style="font-size:22px">⚙️</div>
+          <div class="label">Scheduler</div>
+          <div class="meta">Algo: Round-Robin</div>
+        </div>
+
+        <div class="os-node group-kernel" data-id="procman" data-title="Process Manager" data-desc="Creates, kills, and manages process lifecycle and states (ready, running, blocked)." tabindex="0">
+          <div style="font-size:22px">📦</div>
+          <div class="label">Process Manager</div>
+          <div class="meta">PID space & IPC</div>
+        </div>
+
+        <div class="os-node group-net" data-id="network" data-title="Network Stack" data-desc="Handles L1-L7 operations: sockets, routing, transport (TCP/UDP)." tabindex="0">
+          <div style="font-size:22px">🌐</div>
+          <div class="label">Networks</div>
+          <div class="meta">TCP · UDP · Sockets</div>
+        </div>
+
+        <div class="os-node group-db" data-id="db" data-title="Databases" data-desc="Persistent storage layer: transactions, indexes, queries and replication." tabindex="0">
+          <div style="font-size:22px">🗄️</div>
+          <div class="label">Databases</div>
+          <div class="meta">ACID · Replication</div>
+        </div>
+
+        <div class="os-center" data-id="oscore" data-title="OS Structure" data-desc="High level view tying hardware, kernel and services together.">📘 OS Structure</div>
+
+      </div>
+
+      <!-- scheduler UI -->
+      <div class="scheduler" id="schedulerUI" aria-hidden="true">
+        <div class="muted">Mini-scheduler:</div>
+        <div class="proc" data-pid="1">P1 <div class="progress" style="margin-top:8px"><i></i></div></div>
+        <div class="proc" data-pid="2">P2 <div class="progress" style="margin-top:8px"><i></i></div></div>
+        <div class="proc" data-pid="3">P3 <div class="progress" style="margin-top:8px"><i></i></div></div>
+        <div class="proc" data-pid="4">P4 <div class="progress" style="margin-top:8px"><i></i></div></div>
+      </div>
+
+      <!-- zoom control -->
+      <div class="zoom-control" style="margin-top:12px">
+        <div class="muted">Zoom</div>
+        <input aria-label="zoom range" id="zoomRange" type="range" min="60" max="120" value="100">
+        <div class="muted" id="zoomVal">100%</div></br>
+        <a href="/osDiagramV1" style="text-decoration: none;">
+<!--          <span><strong>Go back</strong></span>
+ -->        </a>
+
+      </div>
+      
+     <!--  <div style="height:18px"></br> --></br></br>
+
+    </div>
+
+
+  </div>
+
+
+</div>
+<div class="foundation-description">
+  <h3>📘 Why v1.0 — Foundations Was Essential for My Career</h3>
+
+  <p>
+    Learning computer science fundamentals was not only an academic milestone,
+    it became the architecture behind everything I learn today. Understanding how
+    systems behave internally (CPU, memory, processes, networks, databases)
+    shaped the way I think, debug, and scale software.
+  </p>
+
+  <p><strong>Here’s what this stage enabled:</strong></p>
+
+  <ul>
+    <li><strong>Systems Thinking:</strong> I learned to see problems as connected components instead of isolated bugs.</li>
+    <li><strong>Architecture Awareness:</strong> I now design solutions based on performance, resource flow, and system constraints.</li>
+    <li><strong>Better Decision-Making:</strong> I can evaluate trade-offs between memory, CPU, I/O, and concurrency.</li>
+    <li><strong>Tool-Builder Mindset:</strong> The diagram above reflects my ability to turn complex ideas into clear, structured explanations.</li>
+    <li><strong>Career Foundations:</strong> Everything I built after v1.0 (APIs, backend, cloud, scalability) relies on these fundamentals.</li>
+  </ul>
+
+  
+
+  <div class="foundation-images">
+    <img src="/static/img/Os_Diagram1.png" alt="Os_Diagram1">
+    <img src="/static/img/Os_Diagram.png" alt="Os_Diagram2">
+    
+  </div>
+</div>
+
+<div class="diagram-features" style="background-color: white;">
+  <h3>🧩 OS Diagram Functionalities & Why They Matter</h3>
+
+  <p>
+    This diagram is not only a visual summary of the foundations I learned during
+    v1.0  it's an interactive documentation tool designed to show how I think
+    as an engineer. Below is a breakdown of the main functionalities and why
+    each one is relevant in a real technical environment.
+  </p>
+
+  <ul>
+    <li>
+      <strong>Expandable Section:</strong>
+      Clicking on the v1.0 title reveals the full OS structure. This helps keep
+      the portfolio clean while letting viewers explore details only when they
+      want them.
+    </li>
+
+    <li>
+      <strong>Animated Nodes:</strong>
+      Each component (CPU, RAM, Scheduler, Processes, Networks, Databases) 
+      animates into view with staggered timing. This visually reinforces the
+      idea that systems are made up of interconnected modules.
+    </li>
+
+    <li>
+      <strong>Hover Effects:</strong>
+      Nodes highlight and scale when hovered, giving visitors a clear sense of
+      where they are in the structure similar to interactive system diagrams
+      used in technical documentation.
+    </li>
+
+    <li>
+      <strong>Connecting Lines:</strong>
+      The dynamic lines between components emphasize relationships within the
+      OS architecture. This communicates system-level thinking rather than
+      isolated understanding.
+    </li>
+
+    <li>
+      <strong>Center Node (OS Core):</strong>
+      Placed at the bottom center, it ties all subsystems together. This mirrors
+      real OS architecture where the kernel orchestrates the entire system.
+    </li>
+
+    <li>
+      <strong>Smooth Collapse Animation:</strong>
+      When closing the section, the diagram retracts cleanly instead of
+      disappearing abruptly. This creates a polished user experience aligned
+      with modern engineering documentation.
+    </li>
+
+    <li>
+      <strong>Responsive Layout:</strong>
+      On smaller screens, the grid reorganizes into a vertical layout. This
+      ensures the visual explanation remains accessible on laptops, tablets, and
+      phones — key for recruiters reviewing portfolios on the go.
+    </li>
+
+    <li>
+      <strong>Clean, Material-Inspired UI:</strong>
+      Rounded corners, subtle shadows, and soft backgrounds create a professional
+      feel while keeping the focus on the content, not the container.
+    </li>
+  </ul>
+
+  <p>
+    Every feature in this diagram is intentional: it transforms abstract
+    knowledge into something interactive, structured, and easy to understand.
+    More importantly, it showcases how I approach engineering problems with
+    clarity, organization, and system-level thinking.
+  </p>
+</div><br>
+<span><strong>
+    <a href="/" style="text-decoration: none; color: #4998f9">
+    Go back
+</a>
+</strong></span>
+  
+  <footer class="text-center py-5 fade-in" style="text-align:center ;">
+    <div itemprop="contactPoint" itemscope itemtype="https://schema.org/ContactPoint">
+  <meta itemprop="email" content="cubalex1992@gmail.com">
+  <meta itemprop="url" content="https://www.linkedin.com/in/alexmartineztech/">
+  <meta itemprop="sameAs" content="https://github.com/alexmartineztech">
+</div>
+    <h2>🤝 Let’s Build, Fix or Improve Something Together</h2>
+    <p>I help teams stay productive, secure, and aligned.
+    If you're building a startup, scaling tech operations or improving your IT foundations, I’d love to contribute.</p>
+    <p>📍 Based in Leipzig · Open to remote/hybrid · EU work-ready.
+    <br>💼 IT Support · Service Desk · Endpoint/Workplace Engineering.</p>
+    <p>
+      <a href="https://www.linkedin.com/in/alexmartineztech/" target="_blank">
+        <i class="bi bi-linkedin enlaces"></i>
+      </a>
+      <a href="https://github.com/alexmartineztech" target="_blank">
+        <i class="bi bi-github enlaces"></i>
+      </a>
+      <a href="mailto:cubalex1992@gmail.com" >
+        <i class="bi bi-envelope-fill enlaces"></i>
+      </a>
+    </p>
+    <p class="mt-4 text-muted ">
+      <script>
+        document.write('&copy; ' + new Date().getFullYear() + ' Alexander Pineda Martinez. All rights reserved.');
+      </script>
+    </p>
+  </footer>
+<div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true"></div>
+
+<!-- modal -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="close-x btn small" id="modalClose">✕</button>
+    <h3 id="modalTitle">Title</h3>
+    <p id="modalDesc">Description</p>
+    <hr>
+    <div id="modalExtra"></div>
+  </div>
+</div>
+
+<script>
+// ---------- Utilities ----------
+const section = document.getElementById('osSection');
+const container = document.getElementById('os-diagram-container');
+const diagram = document.getElementById('diagram');
+const svg = document.getElementById('connSvg');
+let isOpen = false;
+
+// open/close main section
+section.addEventListener('click', (e)=>{
+  // don't toggle if user clicked controls or inside interactive element
+  if(e.target.closest('.controls') || e.target.closest('.filter-chip') || e.target.closest('.btn') || e.target.closest('.proc') ) return;
+  isOpen = !isOpen;
+  section.setAttribute('data-open', isOpen);
+  container.style.maxHeight = isOpen ? container.scrollHeight + 'px' : null;
+  updateConnections();
+});
+
+// ---------- Theme (dark toggle) ----------
+const darkToggle = document.getElementById('darkToggle');
+darkToggle.addEventListener('click',(ev)=>{ ev.stopPropagation(); const root = document.documentElement; if(root.getAttribute('data-theme')==='dark'){root.removeAttribute('data-theme'); darkToggle.textContent='🌙'} else {root.setAttribute('data-theme','dark'); darkToggle.textContent='☀️'} });
+
+// ---------- Zoom ----------
+const zoomRange = document.getElementById('zoomRange');
+const zoomVal = document.getElementById('zoomVal');
+zoomRange.addEventListener('input', (e)=>{ const v = e.target.value; diagram.style.transform = `scale(${v/100})`; zoomVal.textContent = v + '%'; updateConnections(); });
+
+// quick buttons
+document.getElementById('zoomIn').addEventListener('click', (e)=>{ e.stopPropagation(); let v=Number(zoomRange.value); zoomRange.value = Math.min(120, v+10); zoomRange.dispatchEvent(new Event('input')); });
+document.getElementById('zoomOut').addEventListener('click', (e)=>{ e.stopPropagation(); let v=Number(zoomRange.value); zoomRange.value = Math.max(60, v-10); zoomRange.dispatchEvent(new Event('input')); });
+
+// ---------- Filters ----------
+const chips = document.querySelectorAll('.filter-chip');
+chips.forEach(c=>c.addEventListener('click',(ev)=>{ ev.stopPropagation(); chips.forEach(x=>x.classList.remove('active')); c.classList.add('active'); const g = c.getAttribute('data-group'); filterGroup(g); }));
+function filterGroup(group){ const nodes = document.querySelectorAll('.os-node'); if(group==='all'){ nodes.forEach(n=>n.style.display='flex'); } else { nodes.forEach(n=> n.classList.contains(group) ? n.style.display='flex' : n.style.display='none'); }
+  setTimeout(()=>updateConnections(),300);
+}
+
+// ---------- Tooltip (single shared) ----------
+const tooltip = document.getElementById('tooltip');
+document.querySelectorAll('.os-node, .os-center').forEach(node=>{
+  node.addEventListener('mouseenter', (e)=> showTooltip(node));
+  node.addEventListener('mouseleave', hideTooltip);
+  node.addEventListener('focus', ()=> showTooltip(node));
+  node.addEventListener('blur', hideTooltip);
+});
+function showTooltip(node){ const title=node.getAttribute('data-title')||node.textContent.trim(); const desc=node.getAttribute('data-desc')||''; tooltip.innerHTML = `<strong style="display:block;margin-bottom:6px">${title}</strong><span style=font-size:13px>${desc}</span>`; tooltip.classList.add('show'); tooltip.setAttribute('aria-hidden','false'); positionTooltip(node); }
+function hideTooltip(){ tooltip.classList.remove('show'); tooltip.setAttribute('aria-hidden','true'); }
+function positionTooltip(node){ const r = node.getBoundingClientRect(); const t = tooltip.getBoundingClientRect(); const doc = document.documentElement; let top = window.scrollY + r.top - t.height - 10; if(top < 8) top = window.scrollY + r.bottom + 10; let left = window.scrollX + r.left + (r.width - t.width)/2; if(left < 8) left = 8; if(left + t.width > doc.clientWidth - 8) left = doc.clientWidth - t.width - 8; tooltip.style.top = top + 'px'; tooltip.style.left = left + 'px'; }
+window.addEventListener('resize', ()=>{ if(tooltip.classList.contains('show')){ const active = document.querySelector('.os-node:hover, .os-node:focus, .os-center:hover'); if(active) positionTooltip(active); } updateConnections(); });
+
+// ---------- Modal for node details ----------
+const modal = document.getElementById('modalBackdrop');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+const modalExtra = document.getElementById('modalExtra');
+const modalClose = document.getElementById('modalClose');
+modalClose.addEventListener('click',(e)=>{ e.stopPropagation(); closeModal(); });
+modal.addEventListener('click',(e)=>{ if(e.target===modal) closeModal(); });
+document.querySelectorAll('.os-node, .os-center').forEach(node=> node.addEventListener('click', (e)=>{ e.stopPropagation(); openModal(node); }));
+function openModal(node){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); modalTitle.textContent = node.getAttribute('data-title') || node.querySelector('.label')?.textContent || 'Detail'; modalDesc.textContent = node.getAttribute('data-desc') || ''; modalExtra.innerHTML = generateDetails(node.getAttribute('data-id')); }
+function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
+
+function generateDetails(id){ // produce different content depending on node id — shows IT thinking
+  switch(id){
+    case 'cpu': return `
+      <h4>Key responsibilities</h4>
+      <ul><li>Instruction execution</li><li>Context switching</li><li>Performance counters & scheduling fairness</li></ul>
+      <h4>Design notes</h4>
+      <p class=muted>Consider cache hierarchy, branch prediction and vector units when analysing performance.</p>
+    `;
+    case 'ram': return `
+      <h4>Memory model</h4>
+      <ul><li>Volatile main memory, paged virtual address space</li><li>Memory allocation strategies (slab, buddy)</li></ul>
+      <p class=muted>Latency dominated; optimize locality.</p>
+    `;
+    case 'scheduler': return `
+      <h4>Algorithms</h4>
+      <ul><li>Round Robin (time slice)</li><li>Priority + aging</li><li>Completely Fair Scheduler (CFS)</li></ul>
+      <p class=muted>Run the mini-scheduler to simulate time-sliced behavior.</p>
+    `;
+    case 'procman': return `
+      <h4>Process lifecycle</h4>
+      <ol><li>Create → Ready → Running → Blocked → Exit</li></ol>
+      <p class=muted>IPC primitives: pipes, sockets, shared memory, signals.</p>
+    `;
+    case 'network': return `
+      <h4>Stack layers</h4>
+      <ul><li>Link → IP → TCP/UDP → Socket API</li></ul>
+      <p class=muted>Think about connection state, buffers, and congestion control.</p>
+    `;
+    case 'db': return `
+      <h4>Storage concerns</h4>
+      <ul><li>Transactions & durability</li><li>Indexing & query planning</li></ul>
+      <p class=muted>Data modelling and backups are critical.</p>
+    `;
+    default: return `<p class=muted>No extra details.</p>`;
+  }
+}
+
+// keyboard accessibility: close modal with ESC
+window.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ closeModal(); hideTooltip(); } });
+
+// ---------- Connections: draw SVG paths between nodes ----------
+function updateConnections(){ // find center of each node and draw paths
+  const nodes = Array.from(document.querySelectorAll('.os-node, .os-center')).filter(n=> n.offsetParent !== null);
+  // clear svg
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  // We'll draw a few strategic lines: from center to others
+  const center = document.querySelector('.os-center');
+  if(!center || center.offsetParent===null) return;
+  const centerPt = getCenter(center);
+  nodes.forEach(node=>{
+    if(node===center) return;
+    const pt=getCenter(node);
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const offset = 20;
+    // make a simple curve from node to center
+    const d = `M ${pt.x} ${pt.y} C ${pt.x} ${pt.y + offset} ${centerPt.x} ${centerPt.y - offset} ${centerPt.x} ${centerPt.y}`;
+    path.setAttribute('d',d);
+    path.setAttribute('stroke',getComputedStyle(document.documentElement).getPropertyValue('--line').trim() || '#b9c0d4');
+    path.setAttribute('stroke-width','2');
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke-linecap','round');
+    path.style.opacity = 0.95;
+    path.style.transition = 'stroke-dashoffset 1s ease, opacity .6s';
+    // animate dash for drawing
+    const len = 1000; // large enough
+    path.setAttribute('stroke-dasharray',len);
+    path.setAttribute('stroke-dashoffset',len);
+    svg.appendChild(path);
+    // after appending, set precise length
+    requestAnimationFrame(()=>{
+      try{
+        const L = path.getTotalLength();
+        path.setAttribute('stroke-dasharray', L);
+        path.setAttribute('stroke-dashoffset', L);
+        // animate
+        setTimeout(()=> path.setAttribute('stroke-dashoffset','0'), 50);
+      }catch(e){}
+    });
+  });
+}
+function getCenter(el){ const r = el.getBoundingClientRect(); const s = document.documentElement.getBoundingClientRect(); // relative to viewport
+  // get center in svg coordinates (svg positioned absolute in page)
+  const svgRect = svg.getBoundingClientRect();
+  const x = r.left + r.width/2 - svgRect.left;
+  const y = r.top + r.height/2 - svgRect.top;
+  return {x,y};
+}
+
+// initial update when open
+window.addEventListener('load', ()=>{ // auto-open container so user sees features
+  section.setAttribute('data-open', true); isOpen=true; container.style.maxHeight = container.scrollHeight + 'px'; updateConnections();
+  // stagger node animation delays set by css sequence
+  const nodes = document.querySelectorAll('.os-node'); nodes.forEach((n,i)=> n.style.animationDelay = (0.12 + i*0.08)+'s');
+});
+
+// also update when content resizes (images/fonts) — use ResizeObserver if available
+if(window.ResizeObserver){ new ResizeObserver(()=> updateConnections()).observe(document.getElementById('diagram')); }
+
+// ---------- Expand/Collapse individual nodes (simulate detail expand inline) ----------
+const expandAll = document.getElementById('expandAll');
+const collapseAll = document.getElementById('collapseAll');
+expandAll.addEventListener('click',(e)=>{ e.stopPropagation(); document.querySelectorAll('.os-node').forEach(n=> n.style.transform='scale(1.03)'); });
+collapseAll.addEventListener('click',(e)=>{ e.stopPropagation(); document.querySelectorAll('.os-node').forEach(n=> n.style.transform='scale(1)'); });
+
+// ---------- Mini scheduler simulation ----------
+const simulateBtn = document.getElementById('simulateBtn');
+const schedulerUI = document.getElementById('schedulerUI');
+let schedulerRunning = false;
+simulateBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(!schedulerRunning) startScheduling(); else stopScheduling(); });
+function startScheduling(){ schedulerRunning=true; simulateBtn.textContent='■ Stop'; schedulerUI.setAttribute('aria-hidden','false'); // animate processes
+  const procs = Array.from(schedulerUI.querySelectorAll('.proc'));
+  let idx = 0; procs.forEach(p=> p.querySelector('i').style.width='0%');
+  schedulerUI.style.display='flex';
+  // simple round-robin time slice animation
+  window.schedulerInterval = setInterval(()=>{
+    const cur = procs[idx];
+    procs.forEach(p=> p.style.borderColor='var(--border)');
+    cur.style.borderColor='var(--accent)';
+    // animate progress bar for this pid
+    const bar = cur.querySelector('i');
+    bar.style.transition='width 900ms linear';
+    bar.style.width='100%';
+    // after slice, assume partial completion -> shrink to simulate work done
+    setTimeout(()=>{ bar.style.transition='width 300ms linear'; bar.style.width = (Math.random()*60 + 10) + '%'; }, 900);
+    idx = (idx+1) % procs.length;
+  }, 1000);
+}
+function stopScheduling(){ schedulerRunning=false; simulateBtn.textContent='▶ Scheduler'; schedulerUI.setAttribute('aria-hidden','true'); if(window.schedulerInterval) clearInterval(window.schedulerInterval); schedulerUI.style.display='none'; }
+
+// ---------- Accessibility helpers: focus outline for keyboard users ----------
+document.addEventListener('keydown',(e)=>{ if(e.key==='Tab'){ document.documentElement.style.scrollBehavior='smooth'; } });
+
+// ---------- Ensure connections update after interactions ----------
+['transitionend','animationend','mouseup','touchend'].forEach(ev=> document.addEventListener(ev, ()=> updateConnections()));
+
+</script>
+</body>
+</html>

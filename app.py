@@ -10,6 +10,14 @@ learned_topics = [
     "Flask web routing",
 ]
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/osDiagramV1')
+def os_diagram_v1():
+    return render_template('osDiagramV1.html')
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -20,3 +28,7 @@ def learn():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
